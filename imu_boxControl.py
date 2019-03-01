@@ -9,6 +9,7 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+#* open serial port
 ser = serial.Serial('COM5', 38400, timeout=1)
 #ser = serial.Serial('COM3', 38400, timeout=1)
 
@@ -56,14 +57,14 @@ def draw():
 
     drawText((-2,-2, 2), osd_line)
 
-    # the way I'm holding the IMU board, X and Y axis are switched 
-    # with respect to the OpenGL coordinate system
-    if yaw_mode:                             # experimental
-        glRotatef(az, 0.0, 1.0, 0.0)  # Yaw,   rotate around y-axis
+    #* the way I'm holding the IMU board, X and Y axis are switched 
+    #* with respect to the OpenGL coordinate system
+    if yaw_mode:                      #* experimental
+        glRotatef(az, 0.0, 1.0, 0.0)  #* Yaw,   rotate around y-axis
     else:
         glRotatef(0.0, 0.0, 1.0, 0.0)
-    glRotatef(ay ,1.0,0.0,0.0)        # Pitch, rotate around x-axis
-    glRotatef(-1*ax ,0.0,0.0,1.0)     # Roll,  rotate around z-axis
+    glRotatef(ay ,1.0,0.0,0.0)        #* Pitch, rotate around x-axis
+    glRotatef(-1*ax ,0.0,0.0,1.0)     #* Roll,  rotate around z-axis
 
     glBegin(GL_QUADS)	
     glColor3f(0.0,1.0,0.0)
@@ -108,9 +109,9 @@ def read_data():
     ax = ay = az = 0.0
     line_done = 0
 
-    # request data by sending a dot
+    #* request data by sending a dot
     ser.write(b".")
-    #while not line_done:
+    #* while not line_done:
     line = ser.readline() 
     angles = line.split(b", ")
     if len(angles) == 3:    
@@ -124,6 +125,7 @@ def main():
 
     video_flags = OPENGL|DOUBLEBUF
     
+    #* initialize pyGame and create a window
     pygame.init()
     screen = pygame.display.set_mode((640,480), video_flags)
     pygame.display.set_caption("Press Esc to quit, z toggles yaw mode")
@@ -131,9 +133,14 @@ def main():
     init()
     frames = 0
     ticks = pygame.time.get_ticks()
+    
     while 1:
         event = pygame.event.poll()
-        if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+        #* Fix: pyGame window does not close when close button is pressed
+        #* 2 way to close the window: click the x button on top of the window 
+        #*                            or hit Esc key
+        if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+            pygame.quit()  #* quit pygame properly
             break       
         if event.type == KEYDOWN and event.key == K_z:
             yaw_mode = not yaw_mode
@@ -144,8 +151,10 @@ def main():
         pygame.display.flip()
         frames = frames+1
 
-    #print "fps:  %d" % ((frames*1000)/(pygame.time.get_ticks()-ticks))
+    print ("fps:  %d" % ((frames*1000)/(pygame.time.get_ticks()-ticks)))
     ser.close()
 
+
+print(__name__)
 if __name__ == '__main__': main()
 
