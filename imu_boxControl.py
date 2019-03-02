@@ -57,7 +57,7 @@ def draw():
     else:
         osd_line = osd_text
 
-    drawText((-2,-2, 2), osd_line)
+    drawText((-2,-2, 2), osd_line)  #* draw on-screen text
 
     #* the way I'm holding the IMU board, X and Y axis are switched 
     #* with respect to the OpenGL coordinate system
@@ -65,8 +65,9 @@ def draw():
         glRotatef(az, 0.0, 1.0, 0.0)  #* Yaw,   rotate around y-axis
     else:
         glRotatef(0.0, 0.0, 1.0, 0.0)
-    glRotatef(ay ,1.0,0.0,0.0)        #* Pitch, rotate around x-axis
-    glRotatef(-1*ax ,0.0,0.0,1.0)     #* Roll,  rotate around z-axis
+        
+    glRotatef(ay, 1.0, 0.0, 0.0)      #* Pitch, rotate around x-axis
+    glRotatef(-1*ax ,0.0, 0.0, 1.0)   #* Roll,  rotate around z-axis
 
     #* decalre the type of primitive
     glBegin(GL_QUADS)	
@@ -118,9 +119,8 @@ def read_data():
     global ax, ay, az
     ax = ay = az = 0.0
     line_done = 0
-
-    #* request data by sending a dot
-    ser.write(b".")
+    ser.write(b".") #* request data by sending a dot
+    
     #* while not line_done:
     line = ser.readline() 
     angles = line.split(b", ")
@@ -157,10 +157,11 @@ def main():
         if event.type == KEYDOWN and event.key == K_z:
             yaw_mode = not yaw_mode
             ser.write(b"z")
+            
         read_data()
         draw()
       
-        pygame.display.flip()
+        pygame.display.flip() #* update entire display
         frames = frames+1
 
     print ("fps:  %d" % ((frames*1000)/(pygame.time.get_ticks()-ticks)))
