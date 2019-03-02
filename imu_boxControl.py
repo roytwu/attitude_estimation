@@ -10,8 +10,8 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 #* open serial port
-ser = serial.Serial('COM5', 38400, timeout=1)
-#ser = serial.Serial('COM3', 38400, timeout=1)
+#ser = serial.Serial('COM5', 38400, timeout=1)
+ser = serial.Serial('COM3', 38400, timeout=1)
 
 ax = ay = az = 0.0
 yaw_mode = False
@@ -39,7 +39,8 @@ def drawText(position, textString):
     textSurface = font.render(textString, True, (255,255,255,255), (0,0,0,255))     
     textData = pygame.image.tostring(textSurface, "RGBA", True)     
     glRasterPos3d(*position)     
-    glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
+    glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, 
+                 GL_UNSIGNED_BYTE, textData)
 
 def draw():
     global rquad
@@ -48,7 +49,8 @@ def draw():
     glLoadIdentity()
     glTranslatef(0,0.0,-7.0)
 
-    osd_text = "pitch: " + str("{0:.2f}".format(ay)) + ", roll: " + str("{0:.2f}".format(ax))
+    osd_text = "pitch: " + str("{0:.2f}".format(ay)) \
+               + ", roll: " + str("{0:.2f}".format(ax))
 
     if yaw_mode:
         osd_line = osd_text + ", yaw: " + str("{0:.2f}".format(az))
@@ -66,38 +68,46 @@ def draw():
     glRotatef(ay ,1.0,0.0,0.0)        #* Pitch, rotate around x-axis
     glRotatef(-1*ax ,0.0,0.0,1.0)     #* Roll,  rotate around z-axis
 
+    #* decalre the type of primitive
     glBegin(GL_QUADS)	
-    glColor3f(0.0,1.0,0.0)
-    glVertex3f( 1.0, 0.2,-1.0)
+    
+    #* top
+    glColor3f(1.0, 0.0, 0.0)
+    glVertex3f( 1.0, 0.2,-1.0)   
     glVertex3f(-1.0, 0.2,-1.0)		
     glVertex3f(-1.0, 0.2, 1.0)		
     glVertex3f( 1.0, 0.2, 1.0)		
 
-    glColor3f(1.0,0.5,0.0)	
+    #* buttom 
+    glColor3f(0.0, 1.0, 0.0)	
     glVertex3f( 1.0,-0.2, 1.0)
     glVertex3f(-1.0,-0.2, 1.0)		
     glVertex3f(-1.0,-0.2,-1.0)		
     glVertex3f( 1.0,-0.2,-1.0)		
 
-    glColor3f(1.0,0.0,0.0)		
+    #* front
+    glColor3f(0.0, 0.0, 1.0)		
     glVertex3f( 1.0, 0.2, 1.0)
     glVertex3f(-1.0, 0.2, 1.0)		
     glVertex3f(-1.0,-0.2, 1.0)		
     glVertex3f( 1.0,-0.2, 1.0)		
 
-    glColor3f(1.0,1.0,0.0)	
+    #* back
+    glColor3f(0.0, 0.0, 1.0)	
     glVertex3f( 1.0,-0.2,-1.0)
     glVertex3f(-1.0,-0.2,-1.0)
     glVertex3f(-1.0, 0.2,-1.0)		
     glVertex3f( 1.0, 0.2,-1.0)		
 
-    glColor3f(0.0,0.0,1.0)	
+    #* left
+    glColor3f(0.0, 0.0, 1.0)	
     glVertex3f(-1.0, 0.2, 1.0)
     glVertex3f(-1.0, 0.2,-1.0)		
     glVertex3f(-1.0,-0.2,-1.0)		
     glVertex3f(-1.0,-0.2, 1.0)		
 
-    glColor3f(1.0,0.0,1.0)	
+    #* right
+    glColor3f(0.0, 0.0, 1.0)	
     glVertex3f( 1.0, 0.2,-1.0)
     glVertex3f( 1.0, 0.2, 1.0)
     glVertex3f( 1.0,-0.2, 1.0)		
@@ -120,6 +130,7 @@ def read_data():
         az = float(angles[2])
         line_done = 1 
 
+#* ----- main function -----
 def main():
     global yaw_mode
 
@@ -128,7 +139,7 @@ def main():
     #* initialize pyGame and create a window
     pygame.init()
     screen = pygame.display.set_mode((640,480), video_flags)
-    pygame.display.set_caption("Press Esc to quit, z toggles yaw mode")
+    pygame.display.set_caption("Press Esc To Quit. Press Z To Toggle Yaw Mode")
     resize(640,480)
     init()
     frames = 0
@@ -139,7 +150,8 @@ def main():
         #* Fix: pyGame window does not close when close button is pressed
         #* 2 way to close the window: click the x button on top of the window 
         #*                            or hit Esc key
-        if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+        if event.type == pygame.QUIT or \
+        (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.quit()  #* quit pygame properly
             break       
         if event.type == KEYDOWN and event.key == K_z:

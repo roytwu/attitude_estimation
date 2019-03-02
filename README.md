@@ -18,9 +18,18 @@ Using gyro and accelerometer data from IMU (MPU-6050) with the help of Arduino a
 🎮 Deployment
 --------------
 1. connect Arduion with MPU-6050 (connection diagram can be found at https://bit.ly/2VqX6p5)
-2. Connect the Arduino MPU-6050 bundle to PC via USB cable
-3. Uploading firmware to Aruuino via Arduino IDE
-4. In any Python IDE, run boxctrl_6d0f_imu.py
+2. Connect/Power up the Arduino MPU-6050 bundle to PC via USB cable
+3. In Arduino IDE, select proepr board and port (tool tab)
+4. Uploading firmware to Aruuino via Arduino IDE
+5. In any Python IDE, run boxctrl_6d0f_imu.py
+
+
+
+Code has been tested under the following environment:   
+Arduino IDE 1.8.8
+Python IDE - Spyder 3.3.2
+Python 3.7.1, Pygame-1.9.4, pyserial-3.4, PyOpenGL-3.1.0
+
 
 
 🤖 Author 
