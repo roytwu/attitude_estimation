@@ -1,7 +1,9 @@
 """
-File name:  imu_boxControl.py
-Created on: March 1 2019
-Note:       File is imported from https://github.com/mattzzw/Arduino-mpu6050
+File name:   imu_boxControl.py
+Developer:   Roy TWu
+Description: Visualizing IMU's rotational motion via a cuboid
+    03/01/2019 -- File imported from https://github.com/mattzzw/Arduino-mpu6050
+    03/02/2019 -- updated to Python3.7, cuboid image is changed to mimic IMU
 """
 import serial
 import pygame
@@ -10,6 +12,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 #* open serial port
+#* serial pornt # can be found from "Device Manager" (Windows system)  
 ser = serial.Serial('COM5', 38400, timeout=1)
 #ser = serial.Serial('COM3', 38400, timeout=1)
 

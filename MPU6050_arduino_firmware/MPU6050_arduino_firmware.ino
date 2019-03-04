@@ -1,7 +1,9 @@
 //* File name:   MPU6050_arduino_firmware.ino
+//* Developer:   Roy TWu
 //* Description: MPU-6050 Accelerometer + Gyro
-//* Created on:  March 1 2019
-//* Note:        File is imported from https://github.com/mattzzw/Arduino-mpu6050
+//* History:        
+//*   03/01/2019 -- File imported from https://github.com/mattzzw/Arduino-mpu6050
+//*   03/04/2019 -- 
 
 //#include <SoftwareSerial.h>
 #include <Wire.h>
