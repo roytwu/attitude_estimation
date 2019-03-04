@@ -12,14 +12,9 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 #* open serial port
-<<<<<<< HEAD
 #* serial pornt # can be found from "Device Manager" (Windows system)  
 ser = serial.Serial('COM5', 38400, timeout=1)
 #ser = serial.Serial('COM3', 38400, timeout=1)
-=======
-#ser = serial.Serial('COM5', 38400, timeout=1)
-ser = serial.Serial('COM3', 38400, timeout=1)
->>>>>>> 042474b0ddddb7b19b8f868ed8d50c7955d8528c
 
 ax = ay = az = 0.0
 yaw_mode = False
