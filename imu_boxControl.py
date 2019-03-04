@@ -65,12 +65,13 @@ def draw():
     #* the way I'm holding the IMU board, X and Y axis are switched 
     #* with respect to the OpenGL coordinate system
     if yaw_mode:                      #* experimental
-        glRotatef(az, 0.0, 1.0, 0.0)  #* Yaw,   rotate around y-axis
+        glRotatef(az, 0.0, 0.0, 1.0)  #* Yaw,   rotate around z-axis
     else:
-        glRotatef(0.0, 0.0, 1.0, 0.0)
+        glRotatef(0.0, 0.0, 0.0, 1.0)
         
-    glRotatef(ay, 1.0, 0.0, 0.0)      #* Pitch, rotate around x-axis
-    glRotatef(-1*ax ,0.0, 0.0, 1.0)   #* Roll,  rotate around z-axis
+    glRotatef(ay, 0.0, 1.0, 0.0)      #* Pitch, rotate around y-axis
+    glRotatef(ax ,1.0, 0.0, 0.0)      #* Roll,  rotate around x-axis
+    #glRotatef(-1*ax , 1.0, 0.0, 0.0)   #* Roll,  rotate around x-axis
 
     #* decalre the type of primitive
     glBegin(GL_QUADS)	
@@ -161,9 +162,10 @@ def main():
             yaw_mode = not yaw_mode
             ser.write(b"z")
             
+        #* reading data from Arduino
         read_data()
+       
         draw()
-      
         pygame.display.flip() #* update entire display
         frames = frames+1
 

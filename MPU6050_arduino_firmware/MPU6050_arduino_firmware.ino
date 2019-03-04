@@ -22,11 +22,15 @@ Servo roll_servo;
 
 //* global angle, gyro derived
 double gSensitivity = 65.5;     //* for 500 deg/s, check data sheet
-double gx = 0, gy = 0, gz = 0;
 double gyrX = 0, gyrY = 0, gyrZ = 0;
 int16_t accX = 0, accY = 0, accZ = 0;
 
-double gyrXoffs = -281.00, gyrYoffs = 18.00, gyrZoffs = -83.00;
+double angleFromGyro_x = 0;
+double angleFromGyro_y = 0;
+double angleFromGyro_z = 0;
+double gyrXoffs = -281.00;
+double gyrYoffs = 18.00;
+double gyrZoffs = -83.00;
 
 void setup()
 {      
@@ -90,18 +94,28 @@ void loop()
   ay = atan2(accX, sqrt( pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
   ax = atan2(accY, sqrt( pow(accX, 2) + pow(accZ, 2))) * 180 / M_PI;
 
-  //* angles based on gyro (deg/s)
-  gx = gx + gyrX / FREQ;
-  gy = gy - gyrY / FREQ;
-  gz = gz + gyrZ / FREQ;
+  //* Integration, angles based on gyro (deg/s)
+  //* Formula: angle = angle_previous + angular_velocity*dt
+  angleFromGyro_x = angleFromGyro_x  + gyrX / FREQ;  
+  angleFromGyro_y = angleFromGyro_y  - gyrY / FREQ;
+  angleFromGyro_z = angleFromGyro_z  + gyrZ / FREQ;
 
   //* complementary filter
-  //* tau = DT*(A)/(1-A)
-  //* = 0.48sec
-  gx = gx * 0.96 + ax * 0.04;
-  gy = gy * 0.96 + ay * 0.04;
+  //angleFromGyro_x = angleFromGyro_x * 0.96 + ax * 0.04;
+  //angleFromGyro_y = angleFromGyro_y * 0.96 + ay * 0.04;
 
-  //* check if there is some kind of request from the other side...
+
+  //* quaternion
+  double dt = 1/FREQ;
+  double norm_w = sqrt(pow(gyrX,2) + pow(gyrY,2) + pow(gyrZ,2));
+  double dq0 = cos(dt*norm_w/2);
+  double dq1 = (gyrX/norm_w)*sin(dt*norm_w/2);
+  double dq2 = (gyrY/norm_w)*sin(dt*norm_w/2);
+  double dq3 = (gyrZ/norm_w)*sin(dt*norm_w/2);
+  
+
+
+  //* check if there is anyrequest from the other side...
   if(Serial.available())
   {
     char rx_char;
@@ -110,20 +124,21 @@ void loop()
     //* send data as requested
     if (rx_char == '.'){
       digitalWrite(13, HIGH);
-      Serial.print(gx, 2);
+      Serial.print(angleFromGyro_x, 2);
       Serial.print(", ");
-      Serial.print(gy, 2);
+      Serial.print(angleFromGyro_y, 2);
       Serial.print(", ");
-      Serial.println(gz, 2);
+      Serial.println(angleFromGyro_z, 2);
       digitalWrite(13, LOW);
     }
+    
     //* reset z gyro axis
     if (rx_char == 'z'){
-      gz = 0;
+      angleFromGyro_z = 0;
     }  
   }
 
-  roll_servo.write(-gx+90);
+  roll_servo.write(-angleFromGyro_x+90);
 
   end_time = millis();
 
@@ -134,15 +149,13 @@ void loop()
 
 
 void calibrate(){
-
   int x;
+  int num = 500;
   long xSum = 0, ySum = 0, zSum = 0;
   uint8_t i2cData[6]; 
-  int num = 500;
   uint8_t error;
 
   for (x = 0; x < num; x++){
-
     error = i2c_read(MPU6050_I2C_ADDRESS, 0x43, i2cData, 6);
     if(error!=0)
     return;
@@ -164,6 +177,7 @@ void calibrate(){
   
 } 
 
+//* ----- -----
 void read_sensor_data(){
  uint8_t i2cData[14];
  uint8_t error;
@@ -180,10 +194,9 @@ void read_sensor_data(){
  gyrX = (((i2cData[8] << 8) | i2cData[9]) - gyrXoffs) / gSensitivity;
  gyrY = (((i2cData[10] << 8) | i2cData[11]) - gyrYoffs) / gSensitivity;
  gyrZ = (((i2cData[12] << 8) | i2cData[13]) - gyrZoffs) / gSensitivity;
- 
 }
 
-//* ---- I2C routines
+//* ----- I2C routines -----
 int i2c_read(int addr, int start, uint8_t *buffer, int size)
 {
   int i, n, error;
@@ -200,9 +213,8 @@ int i2c_read(int addr, int start, uint8_t *buffer, int size)
   //* Third parameter is true: relase I2C-bus after data is read.
   Wire.requestFrom(addr, size, true);
   i = 0;
-  while(Wire.available() && i<size)
-  {
-    buffer[i++]=Wire.read();
+  while(Wire.available() && i<size){
+    buffer[i++] = Wire.read();
   }
   if ( i != size)
   return (-11);
@@ -210,7 +222,7 @@ int i2c_read(int addr, int start, uint8_t *buffer, int size)
   return (0);  // return : no error
 }
 
-
+//* ----- -----
 int i2c_write(int addr, int start, const uint8_t *pData, int size)
 {
   int n, error;
@@ -228,10 +240,10 @@ int i2c_write(int addr, int start, const uint8_t *pData, int size)
   if (error != 0)
   return (error);
 
-  return (0);         //* return : no error
+  return (0);   //* return : no error
 }
 
-
+//* ----- -----
 int i2c_write_reg(int addr, int reg, uint8_t data)
 {
   int error;
