@@ -1,7 +1,9 @@
 """
-File name:  imu_boxControl.py
-Created on: March 1 2019
-Note:       File is imported from https://github.com/mattzzw/Arduino-mpu6050
+File name:   imu_boxControl.py
+Developer:   Roy TWu
+Description: Visualizing IMU's rotational motion via a cuboid
+    03/01/2019 -- File imported from https://github.com/mattzzw/Arduino-mpu6050
+    03/02/2019 -- updated to Python3.7, cuboid image is changed to mimic IMU
 """
 import serial
 import pygame
@@ -10,8 +12,9 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 #* open serial port
-#ser = serial.Serial('COM5', 38400, timeout=1)
-ser = serial.Serial('COM3', 38400, timeout=1)
+#* serial pornt # can be found from "Device Manager" (Windows system)  
+ser = serial.Serial('COM5', 38400, timeout=1)
+#ser = serial.Serial('COM3', 38400, timeout=1)
 
 ax = ay = az = 0.0
 yaw_mode = False
@@ -68,6 +71,10 @@ def draw():
         
     glRotatef(ay, 0.0, 1.0, 0.0)      #* Pitch, rotate around y-axis
     glRotatef(ax ,1.0, 0.0, 0.0)      #* Roll,  rotate around x-axis
+<<<<<<< HEAD
+=======
+    #glRotatef(-1*ax , 1.0, 0.0, 0.0)   #* Roll,  rotate around x-axis
+>>>>>>> 62ab847890a51da902eba7a344cf68adf94812b8
 
     #* decalre the type of primitive
     glBegin(GL_QUADS)	
@@ -159,9 +166,10 @@ def main():
             yaw_mode = not yaw_mode
             ser.write(b"z")
             
+        #* reading data from Arduino
         read_data()
+       
         draw()
-      
         pygame.display.flip() #* update entire display
         frames = frames+1
 
