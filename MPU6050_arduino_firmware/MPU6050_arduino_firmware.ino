@@ -18,7 +18,7 @@
 //* Bluetooth transmitter, used optionally
 // SoftwareSerial BTSerial(2, 3); // RX | TX
 
-Servo roll_servo;
+//Servo roll_servo;
 
 //* global angle, gyro derived
 double gSensitivity = 65.5;     //* for 500 deg/s, check data sheet
@@ -46,7 +46,7 @@ void setup()
   pinMode(13, OUTPUT); 
 
   //* servo 
-  roll_servo.attach(9, 550, 2550);
+  //roll_servo.attach(9, 550, 2550);
 
   //* Initialize the 'Wire' class for the I2C-bus.
   Wire.begin();
@@ -91,18 +91,19 @@ void loop()
   read_sensor_data();
 
   //* angles based on accelerometer
+  ax = atan2(accY, accZ) * 180 / M_PI;
   ay = atan2(accX, sqrt( pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
-  ax = atan2(accY, sqrt( pow(accX, 2) + pow(accZ, 2))) * 180 / M_PI;
+  
 
   //* Integration, angles based on gyro (deg/s)
   //* Formula: angle = angle_previous + angular_velocity*dt
   angleFromGyro_x = angleFromGyro_x  + gyrX / FREQ;  
-  angleFromGyro_y = angleFromGyro_y  - gyrY / FREQ;
+  angleFromGyro_y = angleFromGyro_y  + gyrY / FREQ;
   angleFromGyro_z = angleFromGyro_z  + gyrZ / FREQ;
 
   //* complementary filter
-  //angleFromGyro_x = angleFromGyro_x * 0.96 + ax * 0.04;
-  //angleFromGyro_y = angleFromGyro_y * 0.96 + ay * 0.04;
+  angleFromGyro_x = angleFromGyro_x * 0.96 + ax * 0.04;
+  angleFromGyro_y = angleFromGyro_y * 0.96 + ay * 0.04;
 
 
   //* quaternion
@@ -138,7 +139,7 @@ void loop()
     }  
   }
 
-  roll_servo.write(-angleFromGyro_x+90);
+  //roll_servo.write(-angleFromGyro_x+90);
 
   end_time = millis();
 
