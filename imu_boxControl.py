@@ -59,60 +59,61 @@ def draw():
 
     drawText((-2,-2, 2), osd_line)  #* draw on-screen text
 
-    #* the way I'm holding the IMU board, X and Y axis are switched 
-    #* with respect to the OpenGL coordinate system
+    #* holding the IMU board such that IMU coordinate system is same as 
+    #* the OpenGL coordinate system
     if yaw_mode:                      #* experimental
-        glRotatef(az, 0.0, 1.0, 0.0)  #* Yaw,   rotate around y-axis
+        glRotatef(az, 0.0, 0.0, 1.0)  #* Yaw,   rotate around z-axis
     else:
-        glRotatef(0.0, 0.0, 1.0, 0.0)
+        glRotatef(0.0, 0.0, 0.0, 1.0)
         
-    glRotatef(ay, 1.0, 0.0, 0.0)      #* Pitch, rotate around x-axis
-    glRotatef(-1*ax ,0.0, 0.0, 1.0)   #* Roll,  rotate around z-axis
+    glRotatef(ay, 0.0, 1.0, 0.0)      #* Pitch, rotate around y-axis
+    glRotatef(ax ,1.0, 0.0, 0.0)      #* Roll,  rotate around x-axis
 
     #* decalre the type of primitive
     glBegin(GL_QUADS)	
     
     #* top
-    glColor3f(1.0, 0.0, 0.0)
-    glVertex3f( 1.0, 0.2,-1.0)   
-    glVertex3f(-1.0, 0.2,-1.0)		
-    glVertex3f(-1.0, 0.2, 1.0)		
-    glVertex3f( 1.0, 0.2, 1.0)		
+    glColor3f(0.0, 0.0, 1.0)
+    glVertex3f( 1.5, 1.0, -0.2)   
+    glVertex3f(-1.5, 1.0, -0.2)		
+    glVertex3f(-1.5, 1.0,  0.2)		
+    glVertex3f( 1.5, 1.0,  0.2)		
 
     #* buttom 
-    glColor3f(0.0, 1.0, 0.0)	
-    glVertex3f( 1.0,-0.2, 1.0)
-    glVertex3f(-1.0,-0.2, 1.0)		
-    glVertex3f(-1.0,-0.2,-1.0)		
-    glVertex3f( 1.0,-0.2,-1.0)		
+    glColor3f(0.0, 0.0, 1.0)	
+    glVertex3f( 1.5, -1.0, -0.2)
+    glVertex3f(-1.5, -1.0, -0.2)		
+    glVertex3f(-1.5, -1.0,  0.2)		
+    glVertex3f( 1.5, -1.0,  0.2)		
 
     #* front
-    glColor3f(0.0, 0.0, 1.0)		
-    glVertex3f( 1.0, 0.2, 1.0)
-    glVertex3f(-1.0, 0.2, 1.0)		
-    glVertex3f(-1.0,-0.2, 1.0)		
-    glVertex3f( 1.0,-0.2, 1.0)		
+    glColor3f(1.0, 0.0, 0.0)		
+    glVertex3f( 1.5,  1.0, 0.2)
+    glVertex3f(-1.5,  1.0, 0.2)		
+    glVertex3f(-1.5, -1.0, 0.2)		
+    glVertex3f( 1.5, -1.0, 0.2)		
 
     #* back
-    glColor3f(0.0, 0.0, 1.0)	
-    glVertex3f( 1.0,-0.2,-1.0)
-    glVertex3f(-1.0,-0.2,-1.0)
-    glVertex3f(-1.0, 0.2,-1.0)		
-    glVertex3f( 1.0, 0.2,-1.0)		
+    glColor3f(0.0, 1.0, 0.0)	
+    glVertex3f( 1.5,  1.0, -0.2)
+    glVertex3f(-1.5,  1.0, -0.2)		
+    glVertex3f(-1.5, -1.0, -0.2)		
+    glVertex3f( 1.5, -1.0, -0.2)	
 
     #* left
     glColor3f(0.0, 0.0, 1.0)	
-    glVertex3f(-1.0, 0.2, 1.0)
-    glVertex3f(-1.0, 0.2,-1.0)		
-    glVertex3f(-1.0,-0.2,-1.0)		
-    glVertex3f(-1.0,-0.2, 1.0)		
+    glVertex3f(-1.5,  1.0,  0.2)
+    glVertex3f(-1.5,  1.0, -0.2)		
+    glVertex3f(-1.5, -1.0, -0.2)		
+    glVertex3f(-1.5, -1.0,  0.2)		
 
     #* right
     glColor3f(0.0, 0.0, 1.0)	
-    glVertex3f( 1.0, 0.2,-1.0)
-    glVertex3f( 1.0, 0.2, 1.0)
-    glVertex3f( 1.0,-0.2, 1.0)		
-    glVertex3f( 1.0,-0.2,-1.0)		
+    glVertex3f(1.5,  1.0,  0.2)
+    glVertex3f(1.5,  1.0, -0.2)		
+    glVertex3f(1.5, -1.0, -0.2)		
+    glVertex3f(1.5, -1.0,  0.2)		
+	
     glEnd()	
          
 def read_data():

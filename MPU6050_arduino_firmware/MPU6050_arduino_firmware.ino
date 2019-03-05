@@ -4,7 +4,7 @@
 //* Note:        File is imported from https://github.com/mattzzw/Arduino-mpu6050
 
 //#include <SoftwareSerial.h>
-#include <Wire.h>
+#include <Wire.h>   
 #include <math.h>
 #include <Servo.h>
 
@@ -24,7 +24,9 @@ double gx = 0, gy = 0, gz = 0;
 double gyrX = 0, gyrY = 0, gyrZ = 0;
 int16_t accX = 0, accY = 0, accZ = 0;
 
-double gyrXoffs = -281.00, gyrYoffs = 18.00, gyrZoffs = -83.00;
+double gyrXoffs = -281.00;
+double gyrYoffs = 18.00, 
+double gyrZoffs = -83.00;
 
 void setup()
 {      
@@ -53,8 +55,7 @@ void setup()
   i2c_write_reg (MPU6050_I2C_ADDRESS, 0x1a, 0x01);
 
   //* GYRO_CONFIG:
-  //* 500 deg/s, FS_SEL=1
-  //* This means 65.5 LSBs/deg/s
+  //* FS_SEL=1, +-500 deg/s, 65.5 LSBs/deg/s
   i2c_write_reg(MPU6050_I2C_ADDRESS, 0x1b, 0x08);
 
   //* CONFIG:
@@ -88,7 +89,7 @@ void loop()
   ay = atan2(accX, sqrt( pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
   ax = atan2(accY, sqrt( pow(accX, 2) + pow(accZ, 2))) * 180 / M_PI;
 
-  //* angles based on gyro (deg/s)
+  //* integration, angles based on gyro (deg/s)
   gx = gx + gyrX / FREQ;
   gy = gy - gyrY / FREQ;
   gz = gz + gyrZ / FREQ;
