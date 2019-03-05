@@ -25,16 +25,12 @@ double gSensitivity = 65.5;     //* for 500 deg/s, check data sheet
 double gyrX = 0, gyrY = 0, gyrZ = 0;
 int16_t accX = 0, accY = 0, accZ = 0;
 
-<<<<<<< HEAD
-double gyrXoffs = -281.00;
-double gyrYoffs = 18.00, 
-=======
+
 double angleFromGyro_x = 0;
 double angleFromGyro_y = 0;
 double angleFromGyro_z = 0;
 double gyrXoffs = -281.00;
 double gyrYoffs = 18.00;
->>>>>>> 62ab847890a51da902eba7a344cf68adf94812b8
 double gyrZoffs = -83.00;
 
 void setup()
@@ -98,18 +94,11 @@ void loop()
   ay = atan2(accX, sqrt( pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
   ax = atan2(accY, sqrt( pow(accX, 2) + pow(accZ, 2))) * 180 / M_PI;
 
-<<<<<<< HEAD
-  //* integration, angles based on gyro (deg/s)
-  gx = gx + gyrX / FREQ;
-  gy = gy - gyrY / FREQ;
-  gz = gz + gyrZ / FREQ;
-=======
   //* Integration, angles based on gyro (deg/s)
   //* Formula: angle = angle_previous + angular_velocity*dt
   angleFromGyro_x = angleFromGyro_x  + gyrX / FREQ;  
   angleFromGyro_y = angleFromGyro_y  - gyrY / FREQ;
   angleFromGyro_z = angleFromGyro_z  + gyrZ / FREQ;
->>>>>>> 62ab847890a51da902eba7a344cf68adf94812b8
 
   //* complementary filter
   //angleFromGyro_x = angleFromGyro_x * 0.96 + ax * 0.04;

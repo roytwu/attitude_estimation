@@ -13,8 +13,8 @@ from OpenGL.GLU import *
 
 #* open serial port
 #* serial pornt # can be found from "Device Manager" (Windows system)  
-ser = serial.Serial('COM5', 38400, timeout=1)
-#ser = serial.Serial('COM3', 38400, timeout=1)
+#ser = serial.Serial('COM5', 38400, timeout=1)
+ser = serial.Serial('COM3', 38400, timeout=1)
 
 ax = ay = az = 0.0
 yaw_mode = False
@@ -71,10 +71,8 @@ def draw():
         
     glRotatef(ay, 0.0, 1.0, 0.0)      #* Pitch, rotate around y-axis
     glRotatef(ax ,1.0, 0.0, 0.0)      #* Roll,  rotate around x-axis
-<<<<<<< HEAD
-=======
     #glRotatef(-1*ax , 1.0, 0.0, 0.0)   #* Roll,  rotate around x-axis
->>>>>>> 62ab847890a51da902eba7a344cf68adf94812b8
+
 
     #* decalre the type of primitive
     glBegin(GL_QUADS)	
