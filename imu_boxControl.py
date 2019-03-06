@@ -13,8 +13,8 @@ from OpenGL.GLU import *
 
 #* open serial port
 #* serial pornt # can be found from "Device Manager" (Windows system)  
-#ser = serial.Serial('COM5', 38400, timeout=1)
-ser = serial.Serial('COM3', 38400, timeout=1)
+ser = serial.Serial('COM5', 38400, timeout=1)
+#ser = serial.Serial('COM3', 38400, timeout=1)
 
 ax = ay = az = 0.0
 yaw_mode = True
@@ -45,6 +45,26 @@ def drawText(position, textString):
     glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, 
                  GL_UNSIGNED_BYTE, textData)
 
+
+tup_vertices= (
+    ( 1.0, -1.5, -0.2),  #* lower right back
+    ( 1.0,  1.5, -0.2),  #* upper right back
+    (-1.0,  1.5, -0.2),  #* upper left back
+    (-1.0, -1.5, -0.2),  #* lower left back
+    ( 1.0, -1.5,  0.5),  #* lower right front
+    ( 1.0,  1.5,  0.5),  #* upper right fromt
+    (-1.0,  1.5,  0.5),  #* upper left front 
+    (-1.0, -1.5,  0.5)   #* lower left front
+)
+
+tup_edges = (    
+    (0,1), (0,3), (0,4),
+    (2,1), (2,3), (2,6),
+    (7,3), (7,4), (7,6),
+    (5,1), (5,4), (5,6)
+)
+
+
 def draw():
     global rquad
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
@@ -64,20 +84,27 @@ def draw():
 
     #* holding the IMU board such that IMU coordinate system is same as 
     #* the OpenGL coordinate system
-
-    if yaw_mode:                      #* experimental
+    #* z-y-x Euler angle, R = Rz*Ry*Rx
+    
+    #* math the OpenFL coordinate frame to World frame
+    glRotatef(-90, 1.0, 0.0, 0.0)      
+    
+    glRotatef(ax, 1.0, 0.0, 0.0)      #* Roll,  rotate around x-axis
+    glRotatef(ay, 0.0, 1.0, 0.0)      #* Pitch, rotate around y-axis
+    if yaw_mode:                      
         glRotatef(az, 0.0, 0.0, 1.0)  #* Yaw,   rotate around z-axis
     else:
         glRotatef(0.0, 0.0, 0.0, 1.0)
-    glRotatef(ay, 0.0, 1.0, 0.0)      #* Pitch, rotate around y-axis
-    glRotatef(ax, 1.0, 0.0, 0.0)      #* Roll,  rotate around x-axis
- 
-
-
-
-    #* decalre the type of primitive
-    glBegin(GL_QUADS)	
     
+    
+
+    glBegin(GL_LINES)
+    for edge in tup_edges:
+        for node in edge:
+            glVertex3fv(tup_vertices[node])
+    glEnd()
+    
+    glBegin(GL_QUADS) #* decalre the type of primitive
     #* top
     glColor3f(0.0, 0.0, 1.0)
     glVertex3f( 1.0, 1.5, -0.2)   
@@ -119,7 +146,6 @@ def draw():
     glVertex3f(1.0,  1.5, -0.2)		
     glVertex3f(1.0, -1.5, -0.2)		
     glVertex3f(1.0, -1.5,  0.2)		
-	
     glEnd()	
          
 def read_data():

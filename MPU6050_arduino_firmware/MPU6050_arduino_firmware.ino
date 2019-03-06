@@ -8,31 +8,32 @@
 //#include <SoftwareSerial.h>
 #include <Wire.h>   
 #include <math.h>
-#include <Servo.h>
 
 #define MPU6050_I2C_ADDRESS 0x68
-
-//* sample freq in Hz
-#define FREQ  30.0 
-
-//* Bluetooth transmitter, used optionally
-// SoftwareSerial BTSerial(2, 3); // RX | TX
-
-//Servo roll_servo;
+#define FREQ  30.0  //* sample freq in Hz
 
 //* global angle, gyro derived
-double gSensitivity = 65.5;     //* for 500 deg/s, check data sheet
-double gyrX = 0, gyrY = 0, gyrZ = 0;
-int16_t accX = 0, accY = 0, accZ = 0;
+double gyrX = 0;
+double gyrY = 0;
+double gyrZ = 0;
 
+int16_t accX = 0;
+int16_t accY = 0;
+int16_t accZ = 0;
 
 double angleFromGyro_x = 0;
 double angleFromGyro_y = 0;
 double angleFromGyro_z = 0;
-double gyrXoffs = -281.00;
-double gyrYoffs = 18.00;
-double gyrZoffs = -83.00;
 
+double gyrXoffs = 0;
+double gyrYoffs = 0;
+double gyrZoffs = 0;
+
+double gSensitivity = 65.5;   //* for 500 deg/s, check data sheet
+
+//* ===== ===== ===== ===== ===== ===== =====
+//* ===           INITIAL SETUP           ===
+//* ===== ===== ===== ===== ===== ===== =====
 void setup()
 {      
   int error;
@@ -44,9 +45,6 @@ void setup()
 
   //* debug led
   pinMode(13, OUTPUT); 
-
-  //* servo 
-  //roll_servo.attach(9, 550, 2550);
 
   //* Initialize the 'Wire' class for the I2C-bus.
   Wire.begin();
@@ -79,6 +77,9 @@ void setup()
   // Serial.write("done.");
 }
 
+//* ===== ===== ===== ===== ===== ===== =====
+//* ===             MAIN LOOP             ===
+//* ===== ===== ===== ===== ===== ===== =====
 void loop()
 {
   int error;
@@ -115,7 +116,6 @@ void loop()
   double dq3 = (gyrZ/norm_w)*sin(dt*norm_w/2);
   
 
-
   //* check if there is anyrequest from the other side...
   if(Serial.available())
   {
@@ -138,9 +138,6 @@ void loop()
       angleFromGyro_z = 0;
     }  
   }
-
-  //roll_servo.write(-angleFromGyro_x+90);
-
   end_time = millis();
 
   //* remaining time to complete sample time
@@ -148,7 +145,7 @@ void loop()
   //Serial.println(end_time - start_time);
 }
 
-
+//* ----- -----
 void calibrate(){
   int x;
   int num = 500;
@@ -169,13 +166,12 @@ void calibrate(){
   gyrYoffs = ySum / num;
   gyrZoffs = zSum / num;
 
-//  Serial.println("Calibration result:");
-//  Serial.print(gyrXoffs);
-//  Serial.print(", ");
-//  Serial.print(gyrYoffs);
-//  Serial.print(", ");
-//  Serial.println(gyrZoffs);
-  
+  Serial.println("Calibration result:");
+  Serial.print(gyrXoffs);
+  Serial.print(", ");
+  Serial.print(gyrYoffs);
+  Serial.print(", ");
+  Serial.println(gyrZoffs);  
 } 
 
 //* ----- -----
