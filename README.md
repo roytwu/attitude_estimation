@@ -1,12 +1,12 @@
 # Attitude Estimation
 
-Using gyro and accelerometer data from IMU (MPU-6050) with the help of Arduino and Python to construct an attitude estimator
+Utilizng gyro and accelerometer data from IMU (MPU-6050) to construct attitude estimatior. Then visualize the result wtih Python and OpenGL. This project was initially developed by [mattzzw](https://bit.ly/2TF1jrU). A lot of changes has been made in this separated repo with more detailed descriptions and comments.
 
 
 💻 Prerequisite
 ----------------
 ### Hardware
-1. Arduino Uno (or 3rd-party compatible baord)
+1. Arduino Uno (or any 3rd-party compatible baord)
 2. GY521 MPU6050
 
 - Interface Arduno with MPU6050
@@ -24,11 +24,11 @@ Using gyro and accelerometer data from IMU (MPU-6050) with the help of Arduino a
 
 🎮 Deployment
 --------------
-1. connect Arduion with MPU-6050 (connection diagram can be found at https://bit.ly/2VqX6p5)
+1. connect Arduion with MPU-6050 (interfacing diagram can be found [here](https://bit.ly/2VqX6p5) )
 2. Connect/Power up the Arduino MPU-6050 bundle to PC via USB cable
 3. In Arduino IDE 'Tool' tab, select proepr board and port 
 4. Uploading firmware to Aruuino via Arduino IDE
-5. In any Python IDE, run boxctrl_6d0f_imu.py
+5. In any Python IDE, run **att_visualization.py** 
 
 
  - Memo:  
@@ -40,7 +40,7 @@ Using gyro and accelerometer data from IMU (MPU-6050) with the help of Arduino a
 
 
 
-🤖 Author 
+🤖 Developer
 ------
 Roy T Wu
 
