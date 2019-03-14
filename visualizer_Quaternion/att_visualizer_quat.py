@@ -53,7 +53,7 @@ def read_data():
     
     print('gyro data output...', gyrX, gyrZ, gyrZ)
 
-#* ----- ----- integration ----- -----  
+#* ----- ----- integrate gyro output ----- -----  
 def gyro_integration():
     global theta, a1, a2, a3
     global dt
@@ -82,7 +82,7 @@ def gyro_integration():
     elif q0 <= -1:
         q0 = -1
     
-    #* Unit Quaternion to angle-axis
+    #* convert unit Quaternion to angle-axis
     if q0*q0 == 1.0:
         print('Null rotation\n')
         theta = 0
@@ -127,58 +127,12 @@ def draw():
 #    else:
 #        glRotatef(0.0, 0.0, 0.0, 1.0)
     
-    #* Unit Quaternion to angle-axis
+    
+    #* rotate cuboid
     glRotatef(theta, a1, a2, a3)
     
-    glBegin(GL_LINES)
-    for edge in GL.tup_edges:
-        for node in edge:
-            glVertex3fv(GL.tup_vertices[node])
-    glEnd()
-    
-    glBegin(GL_QUADS) #* decalre the type of primitive
-    #* top
-    glColor3f(0.0, 0.0, 1.0)
-    glVertex3f( 1.0, 1.5, -0.2)   
-    glVertex3f(-1.0, 1.5, -0.2)		
-    glVertex3f(-1.0, 1.5,  0.2)		
-    glVertex3f( 1.0, 1.5,  0.2)		
-
-    #* buttom 
-    glColor3f(0.0, 0.0, 1.0)	
-    glVertex3f( 1.0, -1.5, -0.2)
-    glVertex3f(-1.0, -1.5, -0.2)		
-    glVertex3f(-1.0, -1.5,  0.2)		
-    glVertex3f( 1.0, -1.5,  0.2)		
-
-    #* front
-    glColor3f(1.0, 0.0, 0.0)		
-    glVertex3f( 1.0,  1.5, 0.2)
-    glVertex3f(-1.0,  1.5, 0.2)		
-    glVertex3f(-1.0, -1.5, 0.2)		
-    glVertex3f( 1.0, -1.5, 0.2)		
-
-    #* back
-    glColor3f(0.0, 1.0, 0.0)	
-    glVertex3f( 1.0,  1.5, -0.2)
-    glVertex3f(-1.0,  1.5, -0.2)		
-    glVertex3f(-1.0, -1.5, -0.2)		
-    glVertex3f( 1.0, -1.5, -0.2)	
-
-    #* left
-    glColor3f(0.0, 0.0, 1.0)	
-    glVertex3f(-1.0,  1.5,  0.2)
-    glVertex3f(-1.0,  1.5, -0.2)		
-    glVertex3f(-1.0, -1.5, -0.2)		
-    glVertex3f(-1.0, -1.5,  0.2)		
-
-    #* right
-    glColor3f(0.0, 0.0, 1.0)	
-    glVertex3f(1.0,  1.5,  0.2)
-    glVertex3f(1.0,  1.5, -0.2)		
-    glVertex3f(1.0, -1.5, -0.2)		
-    glVertex3f(1.0, -1.5,  0.2)		
-    glEnd()	
+    #* draw cuboid
+    GL.cuboid()
       
 
 
@@ -204,7 +158,7 @@ def main():
         event = pygame.event.poll()
         #* Fix: pyGame window does not close when close button is pressed
         #* 2 way to close the window: click the x button on top of the window 
-        #*                            or hit Esc key
+        #* or hit Esc key
         if event.type == pygame.QUIT or \
         (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.quit()  #* quit pygame properly

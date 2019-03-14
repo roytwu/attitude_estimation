@@ -38,7 +38,6 @@ def drawText(position, textString):
                  GL_UNSIGNED_BYTE, textData)
 
 
-
 tup_vertices= (
     ( 1.0, -1.5, -0.2),  #* lower right back
     ( 1.0,  1.5, -0.2),  #* upper right back
@@ -56,3 +55,59 @@ tup_edges = (
     (7,3), (7,4), (7,6),
     (5,1), (5,4), (5,6)
 )
+
+
+def cuboid():
+    #*----- cuboid 1 -----
+    glBegin(GL_LINES)
+    for edge in tup_edges:
+        for node in edge:
+            glVertex3fv(tup_vertices[node])
+    glEnd()
+    
+    
+    #*----- cuboid 2 -----
+    glBegin(GL_QUADS) #* decalre the type of primitive
+    #* top
+    glColor3f(0.0, 0.0, 1.0)
+    glVertex3f( 1.0, 1.5, -0.2)   
+    glVertex3f(-1.0, 1.5, -0.2)		
+    glVertex3f(-1.0, 1.5,  0.2)		
+    glVertex3f( 1.0, 1.5,  0.2)		
+
+    #* buttom 
+    glColor3f(0.0, 0.0, 1.0)	
+    glVertex3f( 1.0, -1.5, -0.2)
+    glVertex3f(-1.0, -1.5, -0.2)		
+    glVertex3f(-1.0, -1.5,  0.2)		
+    glVertex3f( 1.0, -1.5,  0.2)		
+
+    #* front
+    glColor3f(1.0, 0.0, 0.0)		
+    glVertex3f( 1.0,  1.5, 0.2)
+    glVertex3f(-1.0,  1.5, 0.2)		
+    glVertex3f(-1.0, -1.5, 0.2)		
+    glVertex3f( 1.0, -1.5, 0.2)		
+
+    #* back
+    glColor3f(0.0, 1.0, 0.0)	
+    glVertex3f( 1.0,  1.5, -0.2)
+    glVertex3f(-1.0,  1.5, -0.2)		
+    glVertex3f(-1.0, -1.5, -0.2)		
+    glVertex3f( 1.0, -1.5, -0.2)	
+
+    #* left
+    glColor3f(0.0, 0.0, 1.0)	
+    glVertex3f(-1.0,  1.5,  0.2)
+    glVertex3f(-1.0,  1.5, -0.2)		
+    glVertex3f(-1.0, -1.5, -0.2)		
+    glVertex3f(-1.0, -1.5,  0.2)		
+
+    #* right
+    glColor3f(0.0, 0.0, 1.0)	
+    glVertex3f(1.0,  1.5,  0.2)
+    glVertex3f(1.0,  1.5, -0.2)		
+    glVertex3f(1.0, -1.5, -0.2)		
+    glVertex3f(1.0, -1.5,  0.2)		
+    glEnd()	
+
