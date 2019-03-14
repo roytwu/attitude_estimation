@@ -1,21 +1,24 @@
 """
-File name:   imu_boxControl.py
+File name:   att_visualizer.py
 Developer:   Roy TWu
 Description: Visualizing IMU's rotational motion via a cuboid
     03/01/2019 -- File imported from https://github.com/mattzzw/Arduino-mpu6050
     03/02/2019 -- updated to Python3.7, cuboid image is changed to mimic IMU
-    03/14/2019 -- output gyro data from Arduino firmware
+    03/14/2019 -- * updating Arduino file to output gyro data 
+                  * moving the intration part to python script
 """
 import math
 import serial
 import pygame
-import quaternion as Quat
 from math          import cos
 from math          import sin
 from math          import sqrt
 from pygame.locals import *
 from OpenGL.GL     import *
 from OpenGL.GLU    import *
+
+import quaternion  as Quat
+import glRendering as GL
 
 #* open serial port
 #* serial pornt # can be found from "Device Manager" (Windows system)  
@@ -26,52 +29,6 @@ theta = a1 = a2 = a3 = 0.0
 ax = ay = az = 0.0
 yaw_mode = True
 dt = 1.0/30.0;
-
-def resize(width, height):
-    if height==0:
-        height=1
-    glViewport(0, 0, width, height)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    gluPerspective(45, 1.0*width/height, 0.1, 100.0)
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-
-def init():
-    glShadeModel(GL_SMOOTH)
-    glClearColor(0.0, 0.0, 0.0, 0.0)
-    glClearDepth(1.0)
-    glEnable(GL_DEPTH_TEST)
-    glDepthFunc(GL_LEQUAL)
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-
-def drawText(position, textString):     
-    font = pygame.font.SysFont ("Courier", 18, True)
-    textSurface = font.render(textString, True, (255,255,255,255), (0,0,0,255))     
-    textData = pygame.image.tostring(textSurface, "RGBA", True)     
-    glRasterPos3d(*position)     
-    glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, 
-                 GL_UNSIGNED_BYTE, textData)
-
-
-tup_vertices= (
-    ( 1.0, -1.5, -0.2),  #* lower right back
-    ( 1.0,  1.5, -0.2),  #* upper right back
-    (-1.0,  1.5, -0.2),  #* upper left back
-    (-1.0, -1.5, -0.2),  #* lower left back
-    ( 1.0, -1.5,  0.5),  #* lower right front
-    ( 1.0,  1.5,  0.5),  #* upper right fromt
-    (-1.0,  1.5,  0.5),  #* upper left front 
-    (-1.0, -1.5,  0.5)   #* lower left front
-)
-
-tup_edges = (    
-    (0,1), (0,3), (0,4),
-    (2,1), (2,3), (2,6),
-    (7,3), (7,4), (7,6),
-    (5,1), (5,4), (5,6)
-)
-
 
 #* ----- ----- read data ----- -----   
 def read_data():
@@ -155,7 +112,7 @@ def draw():
     else:
         osd_line = osd_text
 
-    drawText((-2,-2, 2), osd_line)  #* draw on-screen text
+    GL.drawText((-2,-2, 2), osd_line)  #* draw on-screen text
 
     #* math the OpenFL coordinate frame to World frame
 #    glRotatef(-90, 1.0, 0.0, 0.0)
@@ -174,9 +131,9 @@ def draw():
     glRotatef(theta, a1, a2, a3)
     
     glBegin(GL_LINES)
-    for edge in tup_edges:
+    for edge in GL.tup_edges:
         for node in edge:
-            glVertex3fv(tup_vertices[node])
+            glVertex3fv(GL.tup_vertices[node])
     glEnd()
     
     glBegin(GL_QUADS) #* decalre the type of primitive
@@ -236,8 +193,8 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((640,480), video_flags)
     pygame.display.set_caption("Press Esc To Quit. Press Z To Toggle Yaw Mode")
-    resize(640,480)
-    init()
+    GL.resize(640,480)
+    GL.init()
     frames = 0
     ticks = pygame.time.get_ticks()
     
@@ -262,7 +219,6 @@ def main():
        
         #* implementing algorithm
         gyro_integration()
-        
         
         #* pygam and OpenGL
         draw()
