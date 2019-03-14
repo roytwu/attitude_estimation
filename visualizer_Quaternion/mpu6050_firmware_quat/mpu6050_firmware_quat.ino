@@ -105,15 +105,6 @@ void loop()
   //* complementary filter
   angleFromGyro_x = angleFromGyro_x * 0.96 + ax * 0.04;
   angleFromGyro_y = angleFromGyro_y * 0.96 + ay * 0.04;
-
-
-  //* quaternion
-  double dt = 1/FREQ;
-  double norm_w = sqrt(pow(gyrX,2) + pow(gyrY,2) + pow(gyrZ,2));
-  double dq0 = cos(dt*norm_w/2);
-  double dq1 = (gyrX/norm_w)*sin(dt*norm_w/2);
-  double dq2 = (gyrY/norm_w)*sin(dt*norm_w/2);
-  double dq3 = (gyrZ/norm_w)*sin(dt*norm_w/2);
   
 
   //* check if there is anyrequest from the other side...
@@ -131,13 +122,11 @@ void loop()
       Serial.print(", ");
       Serial.print(angleFromGyro_z, 2);
       Serial.print(", ");
-      Serial.print(dq0, 2);
+      Serial.print(gyrX, 2);
       Serial.print(", ");
-      Serial.print(dq1, 2);
+      Serial.print(gyrY, 2);
       Serial.print(", ");
-      Serial.print(dq2, 2);
-      Serial.print(", ");
-      Serial.println(dq3, 2);
+      Serial.println(gyrZ, 2);
       digitalWrite(13, LOW);
     }
     

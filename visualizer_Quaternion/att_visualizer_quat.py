@@ -4,22 +4,28 @@ Developer:   Roy TWu
 Description: Visualizing IMU's rotational motion via a cuboid
     03/01/2019 -- File imported from https://github.com/mattzzw/Arduino-mpu6050
     03/02/2019 -- updated to Python3.7, cuboid image is changed to mimic IMU
+    03/14/2019 -- output gyro data from Arduino firmware
 """
 import math
 import serial
 import pygame
 import quaternion as Quat
+from math          import cos
+from math          import sin
+from math          import sqrt
 from pygame.locals import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from OpenGL.GL     import *
+from OpenGL.GLU    import *
 
 #* open serial port
 #* serial pornt # can be found from "Device Manager" (Windows system)  
 ser = serial.Serial('COM5', 38400, timeout=1)
 #ser = serial.Serial('COM3', 38400, timeout=1)
 
+theta = a1 = a2 = a3 = 0.0
 ax = ay = az = 0.0
 yaw_mode = True
+dt = 1.0/30.0;
 
 def resize(width, height):
     if height==0:
@@ -67,14 +73,79 @@ tup_edges = (
 )
 
 
+#* ----- ----- read data ----- -----   
+def read_data():
+    global ax, ay, az
+    global gyrX, gyrY, gyrZ 
+    ax = ay = az = 0.0
+    gyrX = gyrY = gyrZ = 0.0
+    line_done = 0
+    ser.write(b".") #* request data by sending a dot
+    
+    #* while not line_done:
+    line = ser.readline() 
+    angles = line.split(b", ")
+    if len(angles) == 6:    
+        ax = float(angles[0]) #*Euler angle x
+        ay = float(angles[1]) #*Euler angle y
+        az = float(angles[2]) #*Euler angle z
+        gyrX = math.radians(float(angles[3])) 
+        gyrY = math.radians(float(angles[4])) 
+        gyrZ = math.radians(float(angles[5])) 
+        line_done = 1 
+    
+    print('gyro data output...', gyrX, gyrZ, gyrZ)
+
+#* ----- ----- integration ----- -----  
+def gyro_integration():
+    global theta, a1, a2, a3
+    global dt
+    global initQ
+    norm_w = sqrt(math.pow(gyrX,2) + math.pow(gyrY,2) + math.pow(gyrZ,2))
+    
+    if norm_w == 0 :
+        return
+    
+    print('norm_w is ...', norm_w)
+    dq0 = cos(dt*norm_w/2)
+    dq1 = (gyrX/norm_w)*sin(dt*norm_w/2)
+    dq2 = (gyrY/norm_w)*sin(dt*norm_w/2)
+    dq3 = (gyrZ/norm_w)*sin(dt*norm_w/2)    
+    dQ = [dq0, dq1, dq2, dq3]
+
+    initQ = Quat.multiplication(initQ, dQ)
+    q0 = initQ[0]
+    q1 = initQ[1]
+    q2 = initQ[2]
+    q3 = initQ[3]
+  
+    print('\nqq0 is... ', q0, '\n')
+    if q0 >= 1:
+        q0 = 1
+    elif q0 <= -1:
+        q0 = -1
+    
+    #* Unit Quaternion to angle-axis
+    if q0*q0 == 1.0:
+        print('Null rotation\n')
+        theta = 0
+        a1    = 1 
+        a2    = 0 
+        a3    = 0
+    else:
+        theta = math.degrees(2*math.acos(q0))
+        foo   = math.sqrt(1-q0*q0)
+        a1    = q1/foo
+        a2    = q2/foo
+        a3    = q3/foo  
+
+#* ----- ----- draw ----- -----  
 def draw():
     global rquad
-    global initQ
-    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
     
     glLoadIdentity()
-    glTranslatef(0, 0.0, -7.0)
+    glTranslatef(0,0.0,-7.0)
 
     osd_text = "pitch: " + str("{0:.2f}".format(ay)) \
                + ", roll: " + str("{0:.2f}".format(ax))
@@ -87,7 +158,7 @@ def draw():
     drawText((-2,-2, 2), osd_line)  #* draw on-screen text
 
     #* math the OpenFL coordinate frame to World frame
-    #glRotatef(-90, 1.0, 0.0, 0.0)
+#    glRotatef(-90, 1.0, 0.0, 0.0)
     
     #* holding the IMU board such that IMU coordinate system is same as 
     #* the OpenGL coordinate system
@@ -99,26 +170,8 @@ def draw():
 #    else:
 #        glRotatef(0.0, 0.0, 0.0, 1.0)
     
-    """ ----- Quaternion operations ----- """
-    currQ = [q0, q1, q2, q3]
-    #print("hahahah..", initQ)
-    initQ = Quat.multiplication(initQ, currQ)
-    
-    qq0 = initQ[0]
-    qq1 = initQ[1]
-    qq2 = initQ[2]
-    qq3 = initQ[3]
-    
     #* Unit Quaternion to angle-axis
-    theta = math.degrees(2*math.acos(qq0))
-    if theta == 0 or qq0*qq0==1.0:
-        print('Null rotation\n')
-    else:
-        foo = math.sqrt(1-qq0*qq0)
-        a1 = qq1/foo
-        a2 = qq2/foo
-        a3 = qq3/foo
-        glRotatef(theta, a1, a2, a3)
+    glRotatef(theta, a1, a2, a3)
     
     glBegin(GL_LINES)
     for edge in tup_edges:
@@ -169,32 +222,13 @@ def draw():
     glVertex3f(1.0, -1.5, -0.2)		
     glVertex3f(1.0, -1.5,  0.2)		
     glEnd()	
-         
-def read_data():
-    global ax, ay, az
-    global q0, q1, q2, q3
-    ax = ay = az = 0.0
-    q0 = q1 = q2 = q3 = 0.0
-    line_done = 0
-    ser.write(b".") #* request data by sending a dot
-    
-    #* while not line_done:
-    line = ser.readline() 
-    angles = line.split(b", ")
-    if len(angles) == 7:    
-        ax = float(angles[0]) #*Euler angle x
-        ay = float(angles[1]) #*Euler angle y
-        az = float(angles[2]) #*Euler angle z
-        q0 = float(angles[3]) #*unit quaternion, scalar part
-        q1 = float(angles[4]) #*unit quaternion, vector part 1
-        q2 = float(angles[5]) #*unit quaternion, vector part 2
-        q3 = float(angles[6]) #*unit quaternion, vector part 3
-        line_done = 1 
+      
+
 
 #* ----- main function -----
 def main():
-    global initQ
     global yaw_mode
+    global initQ
 
     video_flags = OPENGL|DOUBLEBUF
     
@@ -207,10 +241,9 @@ def main():
     frames = 0
     ticks = pygame.time.get_ticks()
     
-    initQ = [1.0, 0.0, 0.0, 0.0]
+    initQ = [1, 0, 0, 0]
     
     while 1:
-        print("hahahah..", initQ)
         event = pygame.event.poll()
         #* Fix: pyGame window does not close when close button is pressed
         #* 2 way to close the window: click the x button on top of the window 
@@ -223,17 +256,16 @@ def main():
             yaw_mode = not yaw_mode
             ser.write(b"z")
             
+            
         #* reading data from Arduino
         read_data()
        
-        print('\nQuaternion data...')
-        verify = q0*q0 + q1*q1 +q2*q2 + q3*q3
-        print(q0, q1, q2, q3)
-        print('\nLength of the quaternion is.. ', verify)
-        
-        
         #* implementing algorithm
-        draw()  
+        gyro_integration()
+        
+        
+        #* pygam and OpenGL
+        draw()
         
         pygame.display.flip() #* update entire display
         frames = frames+1
