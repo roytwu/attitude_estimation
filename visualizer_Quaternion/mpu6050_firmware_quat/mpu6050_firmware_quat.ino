@@ -3,7 +3,7 @@
 //* Description: MPU-6050 Accelerometer + Gyro
 //* History:        
 //*   03/01/2019 -- File imported from https://github.com/mattzzw/Arduino-mpu6050
-//*   03/04/2019 -- 
+//*   03/14/2019 -- adding gyro measuremnts to the output data list 
 
 //#include <SoftwareSerial.h>
 #include <Wire.h>   
@@ -91,7 +91,8 @@ void loop()
 
   read_sensor_data();
 
-  //* angles based on accelerometer
+  //* angles based on accelerometer measurements
+  //* ax and ay are derived from z-y-x Euler angles
   ax = atan2(accY, accZ) * 180 / M_PI;
   ay = atan2(accX, sqrt( pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
   
