@@ -1,11 +1,15 @@
 """
-File name:   att_visualizer.py
+File name:   _attVisualizer_quat.py
 Developer:   Roy TWu
-Description: Visualizing IMU's rotational motion via a cuboid
+Description: Quaternion-based attitude estimation
+             Visualizing IMU's rotational motion via a cuboid
+History:              
     03/01/2019 -- File imported from https://github.com/mattzzw/Arduino-mpu6050
-    03/02/2019 -- updated to Python3.7, cuboid image is changed to mimic IMU
+    03/02/2019 -- updated to Python3.7, cuboid shape is changed
     03/14/2019 -- * updating Arduino file to output gyro data 
-                  * moving the intration part to python script
+                  * moving the integration part from .ino to python script
+                  * Eular-angle version is commentted out
+                  * moving part of OpenGL to separate script
 """
 import math
 import serial
@@ -21,16 +25,17 @@ import quaternion  as Quat
 import glRendering as GL
 
 #* open serial port
-#* serial pornt # can be found from "Device Manager" (Windows system)  
+#* serial pornt # can be found from "Device Manager" (Windows)  
 ser = serial.Serial('COM5', 38400, timeout=1)
 #ser = serial.Serial('COM3', 38400, timeout=1)
 
 theta = a1 = a2 = a3 = 0.0
 ax = ay = az = 0.0
 yaw_mode = True
-dt = 1.0/30.0;
+dt = 1.0/30.0;  
 
 #* ----- ----- read data ----- -----   
+#* raw gryo data from MPU6050 is in degrees, convert to radians here
 def read_data():
     global ax, ay, az
     global gyrX, gyrY, gyrZ 
@@ -43,15 +48,16 @@ def read_data():
     line = ser.readline() 
     angles = line.split(b", ")
     if len(angles) == 6:    
-        ax = float(angles[0]) #*Euler angle x
-        ay = float(angles[1]) #*Euler angle y
-        az = float(angles[2]) #*Euler angle z
+        ax = float(angles[0])  #*Euler angle x
+        ay = float(angles[1])  #*Euler angle y
+        az = float(angles[2])  #*Euler angle z
         gyrX = math.radians(float(angles[3])) 
         gyrY = math.radians(float(angles[4])) 
         gyrZ = math.radians(float(angles[5])) 
         line_done = 1 
-    
+        
     print('gyro data output...', gyrX, gyrZ, gyrZ)
+
 
 #* ----- ----- integrate gyro output ----- -----  
 def gyro_integration():
@@ -71,7 +77,7 @@ def gyro_integration():
     dQ = [dq0, dq1, dq2, dq3]
 
     initQ = Quat.multiplication(initQ, dQ)
-    q0 = initQ[0]
+    q0 = initQ[0]  
     q1 = initQ[1]
     q2 = initQ[2]
     q3 = initQ[3]
@@ -82,7 +88,7 @@ def gyro_integration():
     elif q0 <= -1:
         q0 = -1
     
-    #* convert unit Quaternion to angle-axis
+    #* convert unit Quaternion to angle-axis representation
     if q0*q0 == 1.0:
         print('Null rotation\n')
         theta = 0
@@ -90,13 +96,15 @@ def gyro_integration():
         a2    = 0 
         a3    = 0
     else:
-        theta = math.degrees(2*math.acos(q0))
+        theta = math.degrees(2*math.acos(q0)) #*angle
         foo   = math.sqrt(1-q0*q0)
-        a1    = q1/foo
-        a2    = q2/foo
-        a3    = q3/foo  
+        a1    = q1/foo   #* axis element 1
+        a2    = q2/foo   #* axis element 2
+        a3    = q3/foo   #* axis element 3
 
 #* ----- ----- draw ----- -----  
+#* holding the IMU board such that IMU coordinate system is same as 
+#* the OpenGL coordinate system  
 def draw():
     global rquad
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
@@ -114,19 +122,16 @@ def draw():
 
     GL.drawText((-2,-2, 2), osd_line)  #* draw on-screen text
 
-    #* math the OpenFL coordinate frame to World frame
+#    #* match the OpenFL coordinate frame to World frame
 #    glRotatef(-90, 1.0, 0.0, 0.0)
-    
-    #* holding the IMU board such that IMU coordinate system is same as 
-    #* the OpenGL coordinate system
-    #* z-y-x Euler angle, R = Rz*Ry*Rx
+#    
+#    #* z-y-x Euler angle, R = Rz*Ry*Rx
 #    glRotatef(ax, 1.0, 0.0, 0.0)      #* Roll,  rotate around x-axis
 #    glRotatef(ay, 0.0, 1.0, 0.0)      #* Pitch, rotate around y-axis
 #    if yaw_mode:                      
 #        glRotatef(az, 0.0, 0.0, 1.0)  #* Yaw,   rotate around z-axis
 #    else:
-#        glRotatef(0.0, 0.0, 0.0, 1.0)
-    
+#        glRotatef(0.0, 0.0, 0.0, 1.0)  
     
     #* rotate cuboid
     glRotatef(theta, a1, a2, a3)
@@ -156,9 +161,7 @@ def main():
     
     while 1:
         event = pygame.event.poll()
-        #* Fix: pyGame window does not close when close button is pressed
-        #* 2 way to close the window: click the x button on top of the window 
-        #* or hit Esc key
+        #* click the x button on top of the window or hit Esc key to quit 
         if event.type == pygame.QUIT or \
         (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.quit()  #* quit pygame properly
@@ -166,7 +169,6 @@ def main():
         if event.type == KEYDOWN and event.key == K_z:
             yaw_mode = not yaw_mode
             ser.write(b"z")
-            
             
         #* reading data from Arduino
         read_data()
@@ -177,7 +179,8 @@ def main():
         #* pygam and OpenGL
         draw()
         
-        pygame.display.flip() #* update entire display
+        #* update entire display
+        pygame.display.flip() 
         frames = frames+1
 
     print ("fps:  %d" % ((frames*1000)/(pygame.time.get_ticks()-ticks)))
