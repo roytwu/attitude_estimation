@@ -45,5 +45,30 @@ def quat_inverse(q):
     invq3 = q3/normQ
     
     invQ = [invq0, invq1, invq2, invq3]
-    return invQ    
+    return invQ   
+
+
+#* convert unit Quaternion to angle-axis representation 
+def quatToRodrigues(q):
+    q0 = q[0]
+    q1 = q[1]
+    q2 = q[2]
+    q3 = q[3]     
+    
+    if q0*q0 == 1.0:
+        print('Null rotation\n')
+        theta = 0
+        a1    = 1 
+        a2    = 0 
+        a3    = 0
+    else:
+        theta = math.degrees(2*math.acos(q0)) #*angle
+        foo   = math.sqrt(1-q0*q0)
+        a1    = q1/foo   #* axis element 1
+        a2    = q2/foo   #* axis element 2
+        a3    = q3/foo   #* axis element 3
+    
+    result = [theta, a1, a2, a3]
+    return result
+    
     

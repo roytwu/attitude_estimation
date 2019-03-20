@@ -119,11 +119,11 @@ void loop()
     //* send data as requested
     if (rx_char == '.'){
       digitalWrite(13, HIGH);
-      Serial.print(acc_x, 2);
+      Serial.print(accX, 2);
       Serial.print(", ");
-      Serial.print(acc_y, 2);
+      Serial.print(accY, 2);
       Serial.print(", ");
-      Serial.print(acc_z, 2);
+      Serial.print(accZ, 2);
       Serial.print(", ");
       Serial.print(gyrX, 2);
       Serial.print(", ");

@@ -64,7 +64,6 @@ def read_data():
 
 #* ----- ----- integrate gyro output ----- -----  
 def gyro_integration():
-    global theta, a1, a2, a3
     global dt
     global initQ
     norm_w = sqrt(math.pow(gyrX,2) + math.pow(gyrY,2) + math.pow(gyrZ,2))
@@ -72,7 +71,6 @@ def gyro_integration():
     if norm_w == 0 :
         return
     
-    print('norm_w is ...', norm_w)
     dq0 = cos(dt*norm_w/2)
     dq1 = (gyrX/norm_w)*sin(dt*norm_w/2)
     dq2 = (gyrY/norm_w)*sin(dt*norm_w/2)
@@ -80,31 +78,12 @@ def gyro_integration():
     dQ = [dq0, dq1, dq2, dq3]
 
     initQ = Quat.multiplication(initQ, dQ)
-    q0 = initQ[0]  
-    q1 = initQ[1]
-    q2 = initQ[2]
-    q3 = initQ[3]
-  
-    print('\nqq0 is... ', q0, '\n')
-    if q0 >= 1:
-        q0 = 1
-    elif q0 <= -1:
-        q0 = -1
+    #* normalize again to avoid numerical integrtion issues 
+    if initQ[0] >= 1:
+        initQ[0] = 1
+    elif initQ[0] <= -1:
+        initQ[0] = -1
     
-    #* convert unit Quaternion to angle-axis representation
-    if q0*q0 == 1.0:
-        print('Null rotation\n')
-        theta = 0
-        a1    = 1 
-        a2    = 0 
-        a3    = 0
-    else:
-        theta = math.degrees(2*math.acos(q0)) #*angle
-        foo   = math.sqrt(1-q0*q0)
-        a1    = q1/foo   #* axis element 1
-        a2    = q2/foo   #* axis element 2
-        a3    = q3/foo   #* axis element 3
-
 
 #* ----- ----- tilt correction ----- -----  
 def tilt_correction():
@@ -156,6 +135,7 @@ def draw():
 def main():
     global yaw_mode
     global initQ
+    global theta, a1, a2, a3
 
     video_flags = OPENGL|DOUBLEBUF
     
@@ -187,6 +167,12 @@ def main():
         #* implementing algorithm
         gyro_integration()
         
+        #* convert quaternion to angl-axis representation
+        angleAxis = Quat.quatToRodrigues(initQ)
+        theta = angleAxis[0]
+        a1 = angleAxis[1]
+        a2 = angleAxis[2]
+        a3 = angleAxis[3]
         
         #* pygam and OpenGL
         draw()
