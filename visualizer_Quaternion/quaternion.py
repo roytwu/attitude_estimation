@@ -1,9 +1,8 @@
 """
 Developer:   Roy TWu
 File Name:   quaternion.py
-Description: Custom module about quaternion multiplication
+Description: Custom module about quaternion operations
 """
-
 import math
 import numpy as np  
 from numpy.linalg  import norm
@@ -55,7 +54,7 @@ def quatToRodrigues(q):
     q3 = q[3]     
     
     if q0*q0 == 1.0:
-        print('Null rotation\n')
+        print('quatToRodrigues() -- Null rotation\n')
         theta = 0
         a1    = 1 
         a2    = 0 
@@ -70,4 +69,17 @@ def quatToRodrigues(q):
     result = np.array([theta, a1, a2, a3])
     return result
     
+#* convert angle-axis representation to unit Quaternion 
+def RodriguesToQuat(a):
+    theta = a[0]
+    axis = a[1:]
+    q0 = math.cos(theta/2)
+    qv = math.sin(theta/2)*axis
+    
+    q = np.append(q0, qv)
+    
+    return q
+
+
+
     

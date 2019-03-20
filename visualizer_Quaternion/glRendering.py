@@ -44,14 +44,13 @@ def draw(angleAxis):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
     
     glLoadIdentity()
-    glTranslatef(0,0.0,-7.0)
+    glTranslatef(0, 0.0, -7.0)
 
 #    osd_text = "pitch: " + str("{0:.2f}".format(ay)) \
 #               + ", roll: " + str("{0:.2f}".format(ax))
 #    osd_line = osd_text + ", yaw: " + str("{0:.2f}".format(az))
 #    drawText((-2,-2, 2), osd_line)  #* draw on-screen text
 
-    
     #* rotate cuboid
     theta = angleAxis[0]
     a1 = angleAxis[1]

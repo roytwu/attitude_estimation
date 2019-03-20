@@ -31,9 +31,7 @@ import glRendering as GL
 ser = serial.Serial('COM5', 38400, timeout=1)
 #ser = serial.Serial('COM3', 38400, timeout=1)
 
-
 dt = 1.0/30.0;  
-
 #* ----- ----- read data ----- -----   
 #* raw gryo data from MPU6050 is in degrees, convert to radians here
 def read_data():
@@ -61,9 +59,10 @@ def read_data():
 
 #* ----- ----- integrate gyro output ----- -----  
 def gyro_integration():
-    global gyr
     global dt
+    global gyr
     global initQ
+    
     norm_w = norm(gyr)
     if norm_w == 0 :
         return
@@ -90,11 +89,13 @@ def gyro_integration():
 def tilt_correction():
     global initQ
     global acc
+    resultQ = np.array([1.0, 0.0, 0.0, 0.0])
     g = np.array([ 0.0, 0.0, -1.0])  #* normalized gravity vector
     
     norm_a = norm(acc)
     if norm_a == 0 :
-        return
+        resultQ = np.array([1.0, 0.0, 0.0, 0.0])
+        return resultQ
     
     #* quaternion-ized vector, 4x1
     accQ = np.append(0, acc/norm_a) 
@@ -103,14 +104,26 @@ def tilt_correction():
     dummy = Quat.multiplication(initQ, accQ)
     G_accQ = Quat.multiplication(dummy, Quat.inverse(initQ))
     G_acc = G_accQ[1:] #* convert back to 3x1 vector 
+    G_acc = G_acc/norm(G_acc)
+    print("norm of G_acc is ... ", norm(G_acc))
     
+    
+    #* finding out angle & axis regarding tilt correction 
     n = np.cross(G_acc, g) 
     phi = math.acos(-G_acc[2])
+    #print("phi is ... ", phi)
     
-    Qn = np.append(phi,n)
-    Qn = Qn/norm(Qn)
-    return Qn
-
+    #* complementary filter parameter
+    alpha = 0.9
+    phi = (1.0-alpha)*phi
+    
+    aa = np.append(phi, n)
+    resultQ = Quat.RodriguesToQuat(aa)
+    
+    
+    print("resultQ is ... ", resultQ)
+    return resultQ
+    
 
 #* ----- main function -----
 def main():
@@ -141,12 +154,15 @@ def main():
        
         #* implementing algorithm
         gyro_integration()
+        #print("initQ is ...", initQ)
         
-        Qt = tilt_correction()
-        #initQ = Quat.multiplication(Qt, initQ)
+        
+        #* complementary filter
+        tcQ = tilt_correction()
+        filteredQ = Quat.multiplication(tcQ, initQ)
         
         #* convert quaternion to angl-axis representation
-        angleAxis = Quat.quatToRodrigues(initQ)
+        angleAxis = Quat.quatToRodrigues(filteredQ)
         
         #* pygam & OpenGL rendering
         #* Note: holding the IMU board such that IMU coordinate system is   
@@ -155,7 +171,7 @@ def main():
         
         #* update entire display
         pygame.display.flip() 
-        frames = frames+1
+        frames = frames + 1
 
     print ("fps:  %d" % ((frames*1000)/(pygame.time.get_ticks()-ticks)))
     ser.close()
