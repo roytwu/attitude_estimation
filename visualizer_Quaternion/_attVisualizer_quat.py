@@ -10,8 +10,11 @@ History:
                   * moving the integration part from .ino to python script
                   * Eular-angle version is commentted out
                   * moving part of OpenGL to separate script
+    03/20/2019 --               
+                  
 """
 import math
+import numpy
 import serial
 import pygame
 from math          import cos
@@ -37,9 +40,9 @@ dt = 1.0/30.0;
 #* ----- ----- read data ----- -----   
 #* raw gryo data from MPU6050 is in degrees, convert to radians here
 def read_data():
-    global ax, ay, az
+    global accX, accY, accZ
     global gyrX, gyrY, gyrZ 
-    ax = ay = az = 0.0
+    accX = accY = accZ = 0.0
     gyrX = gyrY = gyrZ = 0.0
     line_done = 0
     ser.write(b".") #* request data by sending a dot
@@ -48,9 +51,9 @@ def read_data():
     line = ser.readline() 
     angles = line.split(b", ")
     if len(angles) == 6:    
-        ax = float(angles[0])  #*Euler angle x
-        ay = float(angles[1])  #*Euler angle y
-        az = float(angles[2])  #*Euler angle z
+        accX = float(angles[0])  #* accelerometer measurement X
+        accY = float(angles[1])  #* accelerometer measurement Y
+        accZ = float(angles[2])  #* accelerometer measurement Z
         gyrX = math.radians(float(angles[3])) 
         gyrY = math.radians(float(angles[4])) 
         gyrZ = math.radians(float(angles[5])) 
@@ -102,6 +105,24 @@ def gyro_integration():
         a2    = q2/foo   #* axis element 2
         a3    = q3/foo   #* axis element 3
 
+
+#* ----- ----- tilt correction ----- -----  
+def tilt_correction():
+    #* normalized gravity vector
+    g = [ 0, 0, -1] 
+    
+    norm_a = sqrt(math.pow(accX,2) + math.pow(accY,2) + math.pow(accZ,2))
+    accQ = [0, accX/norm_a, accY/norm_a, accZ/norm_a] #*quaternion-ized vector
+    
+    dummy = Quat.multiplication(initQ, accQ)
+    G_accQ = Quat.multiplication(dummy, Quat.inverse(accQ))
+    G_acc = [G_accQ[1], G_accQ[2], G_accQ[3]]
+    
+    n = numpy.cross(G_acc, g)
+    phi = math.acos(-G_acc[2])
+    Qn = [phi, n[0], n[1], n[2]]
+    
+
 #* ----- ----- draw ----- -----  
 #* holding the IMU board such that IMU coordinate system is same as 
 #* the OpenGL coordinate system  
@@ -122,16 +143,6 @@ def draw():
 
     GL.drawText((-2,-2, 2), osd_line)  #* draw on-screen text
 
-#    #* match the OpenFL coordinate frame to World frame
-#    glRotatef(-90, 1.0, 0.0, 0.0)
-#    
-#    #* z-y-x Euler angle, R = Rz*Ry*Rx
-#    glRotatef(ax, 1.0, 0.0, 0.0)      #* Roll,  rotate around x-axis
-#    glRotatef(ay, 0.0, 1.0, 0.0)      #* Pitch, rotate around y-axis
-#    if yaw_mode:                      
-#        glRotatef(az, 0.0, 0.0, 1.0)  #* Yaw,   rotate around z-axis
-#    else:
-#        glRotatef(0.0, 0.0, 0.0, 1.0)  
     
     #* rotate cuboid
     glRotatef(theta, a1, a2, a3)
@@ -175,6 +186,7 @@ def main():
        
         #* implementing algorithm
         gyro_integration()
+        
         
         #* pygam and OpenGL
         draw()

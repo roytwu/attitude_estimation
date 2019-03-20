@@ -3,7 +3,9 @@
 //* Description: MPU-6050 Accelerometer + Gyro
 //* History:        
 //*   03/01/2019 -- File imported from https://github.com/mattzzw/Arduino-mpu6050
-//*   03/14/2019 -- adding gyro measuremnts to the output data list 
+//*   03/14/2019 -- adding gyro measuremnts to the output data list
+//*   03/20/2019 -- removing angleFromGyro_XYZ from output, adding acc_XYX instead
+//*                 this means Euler anlge approach is completely removed 
 
 //#include <SoftwareSerial.h>
 #include <Wire.h>   
@@ -93,19 +95,19 @@ void loop()
 
   //* angles based on accelerometer measurements
   //* ax and ay are derived from z-y-x Euler angles
-  ax = atan2(accY, accZ) * 180 / M_PI;
-  ay = atan2(accX, sqrt( pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
+  //ax = atan2(accY, accZ) * 180 / M_PI;
+  //ay = atan2(accX, sqrt( pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
   
 
   //* Integration, angles based on gyro (deg/s)
   //* Formula: angle = angle_previous + angular_velocity*dt
-  angleFromGyro_x = angleFromGyro_x  + gyrX / FREQ;  
-  angleFromGyro_y = angleFromGyro_y  + gyrY / FREQ;
-  angleFromGyro_z = angleFromGyro_z  + gyrZ / FREQ;
+  //angleFromGyro_x = angleFromGyro_x  + gyrX / FREQ;  
+  //angleFromGyro_y = angleFromGyro_y  + gyrY / FREQ;
+  //angleFromGyro_z = angleFromGyro_z  + gyrZ / FREQ;
 
   //* complementary filter
-  angleFromGyro_x = angleFromGyro_x * 0.96 + ax * 0.04;
-  angleFromGyro_y = angleFromGyro_y * 0.96 + ay * 0.04;
+  //angleFromGyro_x = angleFromGyro_x * 0.96 + ax * 0.04;
+  //angleFromGyro_y = angleFromGyro_y * 0.96 + ay * 0.04;
   
 
   //* check if there is anyrequest from the other side...
@@ -117,11 +119,11 @@ void loop()
     //* send data as requested
     if (rx_char == '.'){
       digitalWrite(13, HIGH);
-      Serial.print(angleFromGyro_x, 2);
+      Serial.print(acc_x, 2);
       Serial.print(", ");
-      Serial.print(angleFromGyro_y, 2);
+      Serial.print(acc_y, 2);
       Serial.print(", ");
-      Serial.print(angleFromGyro_z, 2);
+      Serial.print(acc_z, 2);
       Serial.print(", ");
       Serial.print(gyrX, 2);
       Serial.print(", ");
