@@ -3,6 +3,7 @@ Developer:   Roy TWu
 File Name:   glRendering.py
 Description: OpenGL rendering
 """
+import numpy
 import pygame
 from pygame.locals import *
 from OpenGL.GL     import *
@@ -36,6 +37,32 @@ def drawText(position, textString):
     glRasterPos3d(*position)     
     glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, 
                  GL_UNSIGNED_BYTE, textData)
+
+
+#* ----- ----- ----- ----- ----- ----- -----
+def draw(angleAxis):
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+    
+    glLoadIdentity()
+    glTranslatef(0,0.0,-7.0)
+
+#    osd_text = "pitch: " + str("{0:.2f}".format(ay)) \
+#               + ", roll: " + str("{0:.2f}".format(ax))
+#    osd_line = osd_text + ", yaw: " + str("{0:.2f}".format(az))
+#    drawText((-2,-2, 2), osd_line)  #* draw on-screen text
+
+    
+    #* rotate cuboid
+    theta = angleAxis[0]
+    a1 = angleAxis[1]
+    a2 = angleAxis[2]
+    a3 = angleAxis[3]
+    glRotatef(theta, a1, a2, a3)
+    
+    #* draw cuboid
+    cuboid()
+#* ----- ----- ----- ----- ----- ----- -----      
+
 
 
 tup_vertices= (

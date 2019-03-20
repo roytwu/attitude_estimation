@@ -31,17 +31,15 @@ import glRendering as GL
 ser = serial.Serial('COM5', 38400, timeout=1)
 #ser = serial.Serial('COM3', 38400, timeout=1)
 
-theta = a1 = a2 = a3 = 0.0
-ax = ay = az = 0.0
-yaw_mode = True
+
 dt = 1.0/30.0;  
 
 #* ----- ----- read data ----- -----   
 #* raw gryo data from MPU6050 is in degrees, convert to radians here
 def read_data():
     global acc, gyr #*numpy array
-    accX = accY = accZ = 0.0
-    gyrX = gyrY = gyrZ = 0.0
+    accX = accY = accZ = 0
+    gyrX = gyrY = gyrZ = 0
     line_done = 0
     ser.write(b".") #* request data by sending a dot
     
@@ -105,7 +103,6 @@ def tilt_correction():
     dummy = Quat.multiplication(initQ, accQ)
     G_accQ = Quat.multiplication(dummy, Quat.inverse(initQ))
     G_acc = G_accQ[1:] #* convert back to 3x1 vector 
-    print("G_accQ is ... ", G_accQ)  
     
     n = np.cross(G_acc, g) 
     phi = math.acos(-G_acc[2])
@@ -114,47 +111,16 @@ def tilt_correction():
     Qn = Qn/norm(Qn)
     return Qn
 
-#* ----- ----- draw ----- -----  
-#* holding the IMU board such that IMU coordinate system is same as 
-#* the OpenGL coordinate system  
-def draw():
-    global rquad
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-    
-    glLoadIdentity()
-    glTranslatef(0,0.0,-7.0)
-
-    osd_text = "pitch: " + str("{0:.2f}".format(ay)) \
-               + ", roll: " + str("{0:.2f}".format(ax))
-
-    if yaw_mode:
-        osd_line = osd_text + ", yaw: " + str("{0:.2f}".format(az))
-    else:
-        osd_line = osd_text
-
-    GL.drawText((-2,-2, 2), osd_line)  #* draw on-screen text
-
-    
-    #* rotate cuboid
-    glRotatef(theta, a1, a2, a3)
-    
-    #* draw cuboid
-    GL.cuboid()
-      
-
 
 #* ----- main function -----
 def main():
-    global yaw_mode
     global initQ
-    global theta, a1, a2, a3
 
-    video_flags = OPENGL|DOUBLEBUF
-    
     #* initialize pyGame and create a window
     pygame.init()
+    video_flags = OPENGL|DOUBLEBUF
     screen = pygame.display.set_mode((640,480), video_flags)
-    pygame.display.set_caption("Press Esc To Quit. Press Z To Toggle Yaw Mode")
+    pygame.display.set_caption("Press Esc To Quit")
     GL.resize(640,480)
     GL.init()
     frames = 0
@@ -169,9 +135,6 @@ def main():
         (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.quit()  #* quit pygame properly
             break       
-        if event.type == KEYDOWN and event.key == K_z:
-            yaw_mode = not yaw_mode
-            ser.write(b"z")
             
         #* reading data from Arduino
         read_data()
@@ -184,13 +147,11 @@ def main():
         
         #* convert quaternion to angl-axis representation
         angleAxis = Quat.quatToRodrigues(initQ)
-        theta = angleAxis[0]
-        a1 = angleAxis[1]
-        a2 = angleAxis[2]
-        a3 = angleAxis[3]
         
-        #* pygam and OpenGL
-        draw()
+        #* pygam & OpenGL rendering
+        #* Note: holding the IMU board such that IMU coordinate system is   
+        #*       same as the OpenGL coordinate system  
+        GL.draw(angleAxis)
         
         #* update entire display
         pygame.display.flip() 
