@@ -14,12 +14,11 @@ History:
                   
 """
 import math
-import numpy
+import numpy as np  
 import serial
 import pygame
-from math          import cos
-from math          import sin
-from math          import sqrt
+from numpy.linalg  import norm
+from math          import sin, cos, sqrt
 from pygame.locals import *
 from OpenGL.GL     import *
 from OpenGL.GLU    import *
@@ -40,8 +39,7 @@ dt = 1.0/30.0;
 #* ----- ----- read data ----- -----   
 #* raw gryo data from MPU6050 is in degrees, convert to radians here
 def read_data():
-    global accX, accY, accZ
-    global gyrX, gyrY, gyrZ 
+    global acc, gyr #*numpy array
     accX = accY = accZ = 0.0
     gyrX = gyrY = gyrZ = 0.0
     line_done = 0
@@ -54,28 +52,33 @@ def read_data():
         accX = float(angles[0])  #* accelerometer measurement X
         accY = float(angles[1])  #* accelerometer measurement Y
         accZ = float(angles[2])  #* accelerometer measurement Z
-        gyrX = math.radians(float(angles[3])) 
+        gyrX = math.radians(float(angles[3])) #* convert from degrees to radians
         gyrY = math.radians(float(angles[4])) 
         gyrZ = math.radians(float(angles[5])) 
         line_done = 1 
-        
-    print('gyro data output...', gyrX, gyrZ, gyrZ)
-
+            
+    #print('gyro data output...', gyrX, gyrZ, gyrZ)
+    acc = np.array([accX, accY, accZ])
+    gyr = np.array([gyrX, gyrY, gyrZ])
 
 #* ----- ----- integrate gyro output ----- -----  
 def gyro_integration():
+    global gyr
     global dt
     global initQ
-    norm_w = sqrt(math.pow(gyrX,2) + math.pow(gyrY,2) + math.pow(gyrZ,2))
-    
+    norm_w = norm(gyr)
     if norm_w == 0 :
         return
+    
+    gyrX = gyr[0]
+    gyrY = gyr[1]
+    gyrZ = gyr[2]
     
     dq0 = cos(dt*norm_w/2)
     dq1 = (gyrX/norm_w)*sin(dt*norm_w/2)
     dq2 = (gyrY/norm_w)*sin(dt*norm_w/2)
     dq3 = (gyrZ/norm_w)*sin(dt*norm_w/2)    
-    dQ = [dq0, dq1, dq2, dq3]
+    dQ = np.array([dq0, dq1, dq2, dq3])
 
     initQ = Quat.multiplication(initQ, dQ)
     #* normalize again to avoid numerical integrtion issues 
@@ -87,20 +90,29 @@ def gyro_integration():
 
 #* ----- ----- tilt correction ----- -----  
 def tilt_correction():
-    #* normalized gravity vector
-    g = [ 0, 0, -1] 
+    global initQ
+    global acc
+    g = np.array([ 0.0, 0.0, -1.0])  #* normalized gravity vector
     
-    norm_a = sqrt(math.pow(accX,2) + math.pow(accY,2) + math.pow(accZ,2))
-    accQ = [0, accX/norm_a, accY/norm_a, accZ/norm_a] #*quaternion-ized vector
+    norm_a = norm(acc)
+    if norm_a == 0 :
+        return
     
+    #* quaternion-ized vector, 4x1
+    accQ = np.append(0, acc/norm_a) 
+     
+    #* transfrom accQ to global frame
     dummy = Quat.multiplication(initQ, accQ)
-    G_accQ = Quat.multiplication(dummy, Quat.inverse(accQ))
-    G_acc = [G_accQ[1], G_accQ[2], G_accQ[3]]
+    G_accQ = Quat.multiplication(dummy, Quat.inverse(initQ))
+    G_acc = G_accQ[1:] #* convert back to 3x1 vector 
+    print("G_accQ is ... ", G_accQ)  
     
-    n = numpy.cross(G_acc, g)
+    n = np.cross(G_acc, g) 
     phi = math.acos(-G_acc[2])
-    Qn = [phi, n[0], n[1], n[2]]
     
+    Qn = np.append(phi,n)
+    Qn = Qn/norm(Qn)
+    return Qn
 
 #* ----- ----- draw ----- -----  
 #* holding the IMU board such that IMU coordinate system is same as 
@@ -148,7 +160,7 @@ def main():
     frames = 0
     ticks = pygame.time.get_ticks()
     
-    initQ = [1, 0, 0, 0]
+    initQ = np.array([1.0, 0.0, 0.0, 0.0])
     
     while 1:
         event = pygame.event.poll()
@@ -166,6 +178,9 @@ def main():
        
         #* implementing algorithm
         gyro_integration()
+        
+        Qt = tilt_correction()
+        #initQ = Quat.multiplication(Qt, initQ)
         
         #* convert quaternion to angl-axis representation
         angleAxis = Quat.quatToRodrigues(initQ)
