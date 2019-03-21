@@ -28,7 +28,7 @@ Utilizng gyro and accelerometer data from IMU (MPU-6050) to construct attitude e
 Attitude is constructed by z-y-x Euler angles with complementary filter, singluarity exisits. Gyro and accelerometer data are utilized. 
 
 ### visualizer_Quaternion
-Attitude is constructed by unit quaternions, and then converting to angle-axis rotation. Only gyro data is utilized. 
+Attitude is constructed by unit quaternions, and then converting to angle-axis rotation. An experimental quaternion-based complimentary filter is added to correct the tilt angle. (Details of the complementary filter can be found [here](https://stanford.edu/class/ee267/notes/ee267_notes_imu.pdf). )
 
 
 🎮 Deployment
@@ -64,3 +64,4 @@ Roy T Wu
 - https://playground.arduino.cc/Main/MPU-6050
 - https://bit.ly/2VqX6p5
 - https://www.invensense.com/products/motion-tracking/6-axis/mpu-6050/
+- http://stanford.edu/class/ee267/
