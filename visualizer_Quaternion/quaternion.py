@@ -7,7 +7,7 @@ import math
 import numpy as np  
 from numpy.linalg  import norm
 
-#* multiplication of 2 quaternions
+#* --- multiplication of 2 quaternions ---
 def multiplication(p, q):
     p0 = p[0]
     p1 = p[1]
@@ -27,7 +27,7 @@ def multiplication(p, q):
     return r
 
 
-#* find out quaternion inverse
+#* --- computing quaternion inverse --- 
 def inverse(q):
     #* quaternion conjugate 
     q0 = q[0]
@@ -46,7 +46,7 @@ def inverse(q):
     return invQ   
 
 
-#* convert unit Quaternion to angle-axis representation 
+#* --- converting unit Quaternion to angle-axis rotation --- 
 def quatToRodrigues(q):
     q0 = q[0]
     q1 = q[1]
@@ -69,10 +69,11 @@ def quatToRodrigues(q):
     result = np.array([theta, a1, a2, a3])
     return result
     
-#* convert angle-axis representation to unit Quaternion 
-def RodriguesToQuat(a):
-    theta = a[0]
-    axis = a[1:]
+
+#* --- converting angle-axis rotation to unit Quaternion ---  
+def rodriguesToQuat(a):
+    theta = a[0]  #* angle
+    axis = a[1:]  #* axis
     q0 = math.cos(theta/2)
     qv = math.sin(theta/2)*axis
     

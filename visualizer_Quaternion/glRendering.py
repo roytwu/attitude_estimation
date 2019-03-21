@@ -39,7 +39,7 @@ def drawText(position, textString):
                  GL_UNSIGNED_BYTE, textData)
 
 
-#* ----- ----- ----- ----- ----- ----- -----
+#* ----- ----- ----- ----- ----- ----- -----    
 def draw(angleAxis):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
     

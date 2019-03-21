@@ -10,8 +10,9 @@ History:
                   * moving the integration part from .ino to python script
                   * Eular-angle version is commentted out
                   * moving part of OpenGL to separate script
-    03/20/2019 --               
-                  
+    03/20/2019 -- * adding tilte correction from accelerometer measurements
+                  * adding complementary filter              
+                  * remobing Eular-angle completely
 """
 import math
 import numpy as np  
@@ -113,15 +114,14 @@ def tilt_correction():
     phi = math.acos(-G_acc[2])
     #print("phi is ... ", phi)
     
-    #* complementary filter parameter
-    alpha = 0.9
+    #* alpha: complementary filter parameter
+    alpha = 0.97   
     phi = (1.0-alpha)*phi
     
     aa = np.append(phi, n)
-    resultQ = Quat.RodriguesToQuat(aa)
+    resultQ = Quat.rodriguesToQuat(aa)
     
-    
-    print("resultQ is ... ", resultQ)
+    #print("resultQ is ... ", resultQ)
     return resultQ
     
 
@@ -139,7 +139,8 @@ def main():
     frames = 0
     ticks = pygame.time.get_ticks()
     
-    initQ = np.array([1.0, 0.0, 0.0, 0.0])
+    #* initial attitude, identity
+    initQ = np.array([1.0, 0, 0, 0])
     
     while 1:
         event = pygame.event.poll()
@@ -156,15 +157,14 @@ def main():
         gyro_integration()
         #print("initQ is ...", initQ)
         
-        
-        #* complementary filter
+        #* applying complementary filter
         tcQ = tilt_correction()
         filteredQ = Quat.multiplication(tcQ, initQ)
         
         #* convert quaternion to angl-axis representation
         angleAxis = Quat.quatToRodrigues(filteredQ)
         
-        #* pygam & OpenGL rendering
+        #* pygame & OpenGL rendering
         #* Note: holding the IMU board such that IMU coordinate system is   
         #*       same as the OpenGL coordinate system  
         GL.draw(angleAxis)
