@@ -3,7 +3,7 @@
 Utilizng gyro and accelerometer data from IMU (MPU-6050) to construct attitude estimatior. Then visualize the result wtih Python and OpenGL. This project was initially developed by [mattzzw](https://bit.ly/2TF1jrU). A lot of changes has been made in this separated repo with more detailed descriptions and comments. Furthermore, quaternion version is developed providing singularity-free estimation.
 
 
-💻 Prerequisite
+💻 Setting up
 ----------------
 ### Hardware
 1. Arduino Uno (or any 3rd-party compatible baord)
@@ -50,7 +50,6 @@ Attitude is constructed by unit quaternions, and then converting to angle-axis r
  Arduino IDE 1.8.8  
  Python IDE - Spyder 3.3.2   
  Python 3.7.1, Pygame-1.9.4, PyOpenGL-3.1.0, and  pyserial-3.4   
- ELEGOO UNO 
 
 
 
